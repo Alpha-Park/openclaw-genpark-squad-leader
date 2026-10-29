@@ -1,0 +1,15 @@
+{
+  "name": "openclaw-genpark-squad-leader",
+  "version": "1.0.0",
+  "description": "OpenClaw GenPark autonomous swarm consensus and optimal task allocation engine with heartbeat monitoring and load balancing.",
+  "tools": [
+    {
+      "name": "register_heartbeat",
+      "description": "Register worker node active status and capabilities."
+    },
+    {
+      "name": "allocate_task_to_swarm",
+      "description": "Assign task to the healthiest, lowest-load compatible worker node."
+    }
+  ]
+}
