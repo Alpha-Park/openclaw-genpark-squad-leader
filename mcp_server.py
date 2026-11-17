@@ -18,6 +18,25 @@ def run_tool(name, args):
     else:
         raise ValueError(f"Unknown tool: {name}")
 
+from typing import Any, Dict, List, Optional
+
+try:
+    from mcp.server.fastmcp import FastMCP
+except ImportError as exc:
+    raise SystemExit("MCP requires the mcp package. Run: python -m pip install -r requirements.txt") from exc
+
+mcp = FastMCP('openclaw-genpark-squad-leader')
+
+@mcp.tool()
+def register_heartbeat(agent_id: str = "worker_01", capabilities: Optional[List[str]] = None, current_load: int = 0) -> str:
+    """Register a worker heartbeat in the local swarm state."""
+    return json.dumps(run_tool('register_heartbeat', {'agent_id': agent_id, 'capabilities': capabilities if capabilities is not None else [], 'current_load': current_load}))
+
+@mcp.tool()
+def allocate_task_to_swarm(task_id: str = "task_001", required_capability: str = "code_review", task_weight: int = 1) -> str:
+    """Allocate a task using the registered local swarm state."""
+    return json.dumps(run_tool('allocate_task_to_swarm', {'task_id': task_id, 'required_capability': required_capability, 'task_weight': task_weight}))
+
 def main():
     if "--test" in sys.argv:
         print("[TEST] Running OpenClaw Squad Leader Self-Test...")
@@ -29,15 +48,7 @@ def main():
         print("[TEST] All tests passed successfully!")
         return
 
-    for line in sys.stdin:
-        if not line.strip(): continue
-        try:
-            req = json.loads(line)
-            res = run_tool(req.get("name"), req.get("arguments", {}))
-            print(json.dumps({"jsonrpc": "2.0", "id": req.get("id"), "result": res}))
-        except Exception as e:
-            print(json.dumps({"jsonrpc": "2.0", "id": None, "error": {"code": -32603, "message": str(e)}}))
-        sys.stdout.flush()
+    mcp.run(transport="stdio")
 
 if __name__ == "__main__":
     main()
